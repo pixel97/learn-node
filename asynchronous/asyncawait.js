@@ -6,10 +6,14 @@ function foo(x) {
 }
 
 async function main() {
-  console.log('calling foo ... ');
-  const result = await foo(1);
-  console.log(result);
+  try {
+    console.log('calling foo ... ');
+    const result = await foo(1);
+    console.log(result);
+  } catch (err) {
+    console.log(err);
+  }
+  console.log('done');
 }
 
-main().catch(err => console.log(err));
-console.log('done');
+main();

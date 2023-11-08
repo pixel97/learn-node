@@ -175,6 +175,8 @@ The script logs 0.
 **For you to do**:
 
 1. Change the script such that logs the sum of the elements in the list concatenated list.
+    **Answer**:
+    Use promise to calculate the sum.
 2. Does the code look unweildy to you?
 
 ### Promise
@@ -182,11 +184,67 @@ The script logs 0.
 **For you to do**:
 
 1. Run the script in "asynchronous/promise.js". Explain the order of execution based on the logged messages.
+    **Answer**:
+    Output is as follows:
+    do more stuff
+    in main
+    processing ... 
+    Kim
+
+    The program calls the main function which in turn calls getName function with value 2.
+    As the promise is not rejected, .then() clause is executed. Simultaneously "in main" is printed.
+    The console statement proceeds and prints "processing ... ". As the promise completes it prints
+    names[2] which is "Kim". As promise is still in stack, it will print "do more stuff".
+
+
 2. Change the value of i to 12. How does it change the promise's execution?
+     **Answer**:
+
+     Output is as follows:
+     found bad index
+     in main
+     processing ... 
+     Bad index rejected
+
+     If the value of i is changed to 12, the reject clause of promise will get executed.
+
 3. Run the script in "asynchronous/promise1.js". Explain the order of execution based on the logged messages.
+    **Answer**:
+    Output is as follows:
+
+    do more stuff
+    in main
+    processing ... 
+    Kim
+    Data: The poll phase is actually a blocking phase. If the callback queue associated with it is empty, it blocks the event loop till the earliest scheduled callback in the timers queue. For example, consider an example where a callback is scheduled to run in 20 ms (using timeout). Also, let’s say the script is reading asynchronously from a file which takes 15 ms. Since the read is asynchronous there is a callback which runs in 10 ms when the read is finished. In this case, the event loop will be blocked in the poll phase after the read is finished in 15 ms, waiting for the poll queue to be filled with I/O callbacks. It waits because the earliest timer callback is not until 20 ms. Once the queue is filled with the callback, it instantly runs the callback. At this point, the queue is empty and more than 20 ms have passed. So, the event loop zips back to the timers phase and runs the callback in its queue.
+
+    The main function will get executed first and will call getName(2) which will call
+    .then() clause. Meanwhile "in main" and "processing..." gets printed. After the promise gets resolved it prints "Kim". At the start of the program an I/O operation is getting executed and once finishes it will print content of file.
+
+
 4. Do promises run before or after process.nextTick()?
+
+     **Answer**:
+    The current operation completes.
+    The nextTick queue is processed.
+    The Promise microtask queue is processed.
+
 5. Run the script in "asynchronous/promise2.js". Explain the order of execution based on the logged messages.
+
+     **Answer**:
+    Output is as follows:
+    doing other things ...
+    in timer phase
+    6
+
+    As the execution occurs, "doing other things ..." is printed. Since list has 3 items, promise is resolved and setTimeout is executed and prints "in timer phase". After 5 ms k will become [1,2,3].
+    After that sumf will get executed and prints sum of array.
+
 6. Discuss the implications of running a computationally expensive task in a promise.
+
+     **Answer**:
+    1. Promise will delay the execution of other callbacks.
+    2. Poor User experience.
 
 Read more about Promises [here](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Using_promises#common_mistakes).
 
@@ -195,6 +253,44 @@ Read more about Promises [here](https://developer.mozilla.org/en-US/docs/Web/Jav
 **For you to do**:
 1. The code in "asynchronous/asyncawait_timer.js" is quite hard to read. Rewrite it using async/await.
 2. Explore the difference between sequentialStart, concurrentStart, concurrentPromise, and parallel in "asynchronous/concurrency.js".
+
+     **Answer**:
+     1. sequentialStart - Asynchronous operations one after another. Each operation must complete before the next one starts.
+     2. concurrentStart - Asynchronous operations at the same time but not necessarily managing their results in a coordinated way.
+     3. concurrentPromise - Managing multiple promises concurrently, likely using Promise.all or a similar feature to wait for all of them to resolve.
+     4. parallel - This implies running asynchronous operations in parallel. 
+
+     Output
+
+        ==SEQUENTIAL START==
+        starting slow promise
+        slow promise is done
+        slow
+        starting fast promise
+        fast promise is doneå
+        fast
+        ==CONCURRENT START with await==
+        starting slow promise
+        starting fast promise
+        fast promise is done
+        slow promise is done
+        slow
+        fast
+        ==CONCURRENT START with Promise.all==
+        starting slow promise
+        starting fast promise
+        fast promise is done
+        slow promise is done
+        slow
+        fast
+        ==PARALLEL with await Promise.all==
+        starting slow promise
+        starting fast promise
+        fast promise is done
+        fast
+        slow promise is done
+        slow
+
 
 
 # Further Reading:

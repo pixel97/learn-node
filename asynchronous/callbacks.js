@@ -1,12 +1,20 @@
 let k = [];
+
 function someAsyncOperation() {
-  setTimeout(function() {
-    k = k.concat([1,2,3]);
-  }, 0);
+  // Return a new promise that resolves after the setTimeout callback has been executed
+  return new Promise((resolve) => {
+    setTimeout(function() {
+      k = k.concat([1,2,3]);
+      resolve(k); // Resolve the promise with the updated array
+    }, 0);
+  });
 };
-someAsyncOperation();
-let sum = 0
-k.forEach((item, i) => {
-  sum = sum + item;
+
+
+someAsyncOperation().then((updatedArray) => {
+  let sum = 0;
+  updatedArray.forEach((item) => {
+    sum = sum + item;
+  });
+  console.log(sum);
 });
-console.log(sum);
