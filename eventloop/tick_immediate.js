@@ -3,7 +3,7 @@ setImmediate(() => {
     console.log(`Run Immediately = ${count}`)
 });
 
-process.nextTick(() => {
+setImmediate(() => {
     count++;
     console.log(`nextTick = ${count}`)
 });

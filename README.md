@@ -35,7 +35,20 @@ Answer the following questions based on "basics/foo.js":
 
     `$ node foo.js hello 'I am' "an argument"`
 
+    Output : 
+    /opt/homebrew/Cellar/node/21.1.0/bin/node
+    /Users/anushkajain/Downloads/learn-node-main/basics/foo.js
+    hello
+    I am
+    an argument
+
 2. Modify "basics/foo.js" such that all arguments except the Node path and the script path are logged.
+
+   Output:
+   hello
+   I am
+   an argument
+
 
 # Block and Non Blocking Operations
 
@@ -45,12 +58,16 @@ The NodeJS standard library has several operations that are called blocking oper
 
 1. Explore the code in "operations/blocking.js" and "operations/nonblocking.js". For which code will the function moreWork() get executed. Why?
 
+In both pieces of code, moreWork() will be executed, but in the non-blocking scenario, it will happen before the file read operation is completed, while in the blocking scenario, it will happen after the file read operation is completed.
+
 One must be careful when writing concurrent scripts in Node.js. If actions performed in later stages are related to actions related in previous stages or vice-versa then the program will be in an error state. 
 For example, consider the code in "operations/syncdelete.js".
 
 **For you to do**:
 
 1. Identify and fix the runtime error in "operations/syncdelete.js".
+
+The file is getting deleted asynchronously, while the file is getting read. To fix the code unlinkSync wih unlink and move the code inside the function.
 
 # Event Loop
 
@@ -60,32 +77,94 @@ When *setTimeout(callback, ms)* invoked, Node puts a *callback* in the timer pha
 
 1. In "eventloop/timer.js", what will be the order of execution?
 
+    Output: 
+    foo
+    baz
+    foo
+    baz
+    2 : bar
+    1 : bar
+
 2. How many callbacks will the timers phase queue have after the script is run? 
+
+There will be two callbacks in the timers phase queue for bar(1) and bar(2).
 
 All I/O operations (e.g., read a file) run in the poll phase. The poll phase performs an I/O operation and puts all callbacks associated with the I/O operation in its queue. When the I/O operation completes, it executes the callbacks in the queue. 
 
 **For you to do**:
 1. In "eventloop/poll.js", which phase of the event loop will contain callback functions? What will they be?
+    The fs.readFile function is an asynchronous I/O operation. Its callback function will be queued in the poll phase of the event loop after the file I/O operation has been completed.
+
 2. What will be the execution order?
+
+    someAsyncOperation() is called. This begins the file read operation.
+    Immediately, foo() is called, which logs 'foo'.
+    console.log('done') is executed, logging 'done'.
+
 
 The poll phase is actually a blocking phase. If the callback queue associated with it is empty, it blocks the event loop till the earliest scheduled callback in the timers queue.
 
 **For you to do**:
 1. Run the script "eventloop/poll_timer.js". Explain the order of execution in terms of the messages you see in the console.
+
+    Output will be as follows:
+    someAsyncOperation
+    103ms have passed since I was scheduled
+
+    The program starts with someAsyncOperation() which starts reading the file.
+    Immediately setTimeOut() is executed and starts 100ms timer.
+    Before 100ms is completed file read is completed and event is put in poll queue.
+    Now poll queue will execute other someAsyncOperation logging "someAsyncOperation".
+    This in turn waits for 10ms and is blocking the queue to complete.
+    After this setTimeOut() will execute and logs 104ms.
+
 2. Change "Date.now() - startCallback < 10" in line 21 to "Date.now() - startCallback < 150". Will the order of execution change?
+    Output will be:
+    someAsyncOperation
+    154ms have passed since I was scheduled
+
+    The order of execution will not change as event loop will be blocked for 150ms instead of 10ms.
+
 3. Set timeout to 0. Will the order of execution change?
+    Output will be:
+    3ms have passed since I was scheduled
+    someAsyncOperation
+
+    Yes, the order of execution will change now. As the timeOut() is set to zero, it will get executed. It goes to the poll queue and excute someAsyncOperation and logs it.
+
 
 **For you to do**:
 1. Run the script in "eventloop/immediate.js". What order of execution do you see in terms of the messages being logged.
+
+    Output will be as follows:
+    <Buffer 54 68 65 20 70 6f 6c 6c 20 70 68 61 73 65 20 69 73 20 61 63 74 75 61 6c 6c 79 20 61 20 62 6c 6f 63 6b 69 6e 67 20 70 68 61 73 65 2e 20 49 66 20 74 68 ... 861 more bytes>
+    I was scheduled to run immediately
+    6ms have passed since I was scheduled
+
 2. Change the script such that the immediate callback runs first.
+    Put the setImmediate() functions outside the file read function.
 
 The *process.nextTick()* API allows us to schedule tasks before the event loop.
 
 **For you to do**:
 1. Run the script "eventloop/tick_immediate.js". Explain the order of execution in terms of the messages logged.
-2. Run the script "eventloop/tick_immediate.js". Why doesn't setTimeout get executed? 
+    Output is as follows:
+    main = 0
+    nextTick = 1
+    Run Immediately = 1
+
+2. Run the script "eventloop/starve.js". Why doesn't setTimeout get executed? 
+    In the script process.nextTick will get priority before setTimeout. And as we can see
+    process.nextTick is being called recursively and this never stops.
+
 3. How does the output change if we replace process.nexTick(cb) with setImmediate(cb)?
+    Output will be as follows:
+    Start
+    setTimeout executed
+    
 4. Why does the script "eventloop/eventemit.js" not log the event message? Change it such that the event message gets logged.
+    The "eventloop/eventemit.js" not log the event message because the event is emitted in constructor
+    before the listener is attached to it. To log it, emit the message in process.nextTick().
 
 
 ## Asynchronous Programming
